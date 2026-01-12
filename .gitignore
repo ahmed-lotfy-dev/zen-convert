@@ -1,0 +1,34 @@
+# Dependencies
+node_modules
+
+# Build output
+dist-electron
+dist
+out
+*.log
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+
+# Testing
+coverage
+.playwright
+.nyc_output
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

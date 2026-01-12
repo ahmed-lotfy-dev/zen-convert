@@ -1,50 +1,40 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- Sync Impact Report
+Version change: none → 1.0.0
+List of modified principles: none
+Added sections: Performance and Efficiency, Security and Privacy, Cross-Platform Compatibility, Extensible Format Support, User-Centric Design, Additional Constraints, Development Workflow, Governance
+Removed sections: none
+Templates requiring updates: none (no references to constitution yet)
+Follow-up TODOs: none
+-->
+# Zen Convert Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Performance and Efficiency
+All media conversions must be optimized for speed and resource usage. Asynchronous processing, efficient algorithms, and minimal memory footprint are mandatory. Benchmarks against similar tools must show competitive performance.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Security and Privacy
+User files are processed locally only; no data uploaded without explicit consent. Implement secure file handling, sandboxing where possible, and clear privacy guarantees in UI.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Cross-Platform Compatibility
+The application must run seamlessly on Windows, macOS, and Linux using Electron. Ensure consistent UI/UX and functionality across platforms.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Extensible Format Support
+Support core media formats (images: JPEG, PNG, WebP; videos: MP4, AVI; audio: MP3, WAV). Architecture must allow plugin-based addition of new formats without core changes.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. User-Centric Design
+Interface must be intuitive with drag-and-drop, progress indicators, and error feedback. Prioritize accessibility and responsive design for various screen sizes.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Additional Constraints
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Use open-source dependencies under permissive licenses. Ensure compliance with copyright laws for media processing. Implement proper error logging without exposing sensitive information.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Follow Test-Driven Development for critical paths. Use code reviews for all changes. Maintain CI/CD pipeline for builds, linting, and basic tests.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+The constitution supersedes all other practices. Amendments require consensus among core contributors, documented rationale, and update to version per semver. Compliance verified in code reviews and PR checks.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-01-11 | **Last Amended**: 2026-01-12
