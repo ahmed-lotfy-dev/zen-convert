@@ -103,6 +103,74 @@ export interface NavigationGetToolResponse {
   timestamp: number;
 }
 
+// Image operations
+export interface ImageGetMetadataRequest {
+  filePath: string;
+}
+
+export interface ImageGetMetadataResponse {
+  metadata: {
+    width?: number;
+    height?: number;
+    format?: string;
+    size: number;
+  };
+}
+
+export interface ImageConvertRequest {
+  filePath: string;
+  options: {
+    format: 'png' | 'jpeg' | 'webp' | 'avif';
+    quality?: number;
+    outputPath?: string;
+  };
+}
+
+export interface ImageConvertResponse {
+  outputPath: string;
+}
+
+// YouTube operations
+export interface YouTubeGetInfoRequest {
+  url: string;
+}
+
+export interface YouTubeGetInfoResponse {
+  info: YouTubeVideoInfo;
+}
+
+export interface YouTubeDownloadRequest {
+  url: string;
+  format: 'mp4' | 'mp3';
+  quality?: string;
+  outputPath?: string;
+}
+
+export interface YouTubeDownloadResponse {
+  success: boolean;
+  filePath: string;
+}
+
+export interface YouTubeVideoInfo {
+  id: string;
+  title: string;
+  duration: number;
+  thumbnail: string;
+  uploader: string;
+  views?: number;
+  description?: string;
+  formats: YouTubeFormat[];
+}
+
+export interface YouTubeFormat {
+  formatId: string;
+  extension: string;
+  resolution?: string;
+  filesize?: number;
+  hasVideo: boolean;
+  hasAudio: boolean;
+}
+
 // Application lifecycle
 export interface AppCloseRequest {
   force?: boolean;

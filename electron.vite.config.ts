@@ -7,6 +7,15 @@ export default defineConfig({
     plugins: [],
     build: {
       outDir: 'dist-electron/main',
+      rollupOptions: {
+        external: [
+          'sharp',
+          'fluent-ffmpeg',
+          'youtube-dl-exec',
+          '@ffmpeg-installer/ffmpeg',
+          '@ffprobe-installer/ffprobe'
+        ],
+      },
     },
     resolve: {
       alias: {
