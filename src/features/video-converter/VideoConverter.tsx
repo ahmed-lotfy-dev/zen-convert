@@ -54,12 +54,13 @@ export default function VideoConverter() {
     let unlistenComplete: (() => void) | undefined;
 
     async function setupListeners() {
-      unlistenProgress = await listen<{ currentTime: number; totalTime: number; message: string }>(
+      unlistenProgress = await listen<{ currentTime: number; totalTime: number; percent: number }>(
         'video-progress',
         (event) => {
           const current = event.payload.currentTime;
           const total = event.payload.totalTime || totalDuration || 1;
-          const percent = Math.min(Math.round((current / total) * 100), 100);
+          const percent =
+            event.payload.percent || Math.min(Math.round((current / total) * 100), 100);
           setProgressPercent(percent);
           setTotalDuration(total);
 
@@ -621,14 +622,14 @@ export default function VideoConverter() {
 
               <div className="pt-4 space-y-4">
                 {isProcessing ? (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
                       <span>Progress</span>
                       <span>{progressPercent}%</span>
                     </div>
-                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-purple-500 transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -638,6 +639,22 @@ export default function VideoConverter() {
                         <span>{currentProgress.split(' / ')[1]}</span>
                       </div>
                     )}
+                    <button
+                      onClick={async () => {
+                        try {
+                          await invoke('cancel_video_conversion');
+                          setCurrentProgress('Cancelled');
+                          setProgressPercent(0);
+                          setProcessing(false);
+                          message('Conversion cancelled.', { title: 'Cancelled', kind: 'info' });
+                        } catch (err) {
+                          console.error('Cancel error:', err);
+                        }
+                      }}
+                      className="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-400 border border-rose-500/30 hover:bg-rose-500/10 transition-all"
+                    >
+                      Cancel Conversion
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
