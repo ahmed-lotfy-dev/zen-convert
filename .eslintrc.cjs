@@ -14,10 +14,11 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
-  plugins: ['react', 'react-hooks'],
+  plugins: ['react', 'react-hooks', '@typescript-eslint'],
   settings: {
     react: {
       version: 'detect',
@@ -33,6 +34,6 @@ module.exports = {
         varsIgnorePattern: '^_',
       },
     ],
-    'no-console': ['warn', { allow: ['warn', 'error'] },
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
-}
+};
