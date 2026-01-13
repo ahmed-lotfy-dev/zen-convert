@@ -190,16 +190,18 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
 
     // Quality preset: Higher quality = lower CRF (0-51 scale)
     // 360p -> CRF 28, 480p -> CRF 26, 720p -> CRF 23, 1080p -> CRF 20
-    // If quality is None, preserve original (don't set CRF)
+    // Only apply CRF for valid presets (360, 480, 720, 1080), ignore old slider values like 51
     if let Some(quality_preset) = options.quality {
         let crf_value = match quality_preset {
-            360 => 28,
-            480 => 26,
-            720 => 23,
-            1080 => 20,
-            _ => 23,
+            360 => Some(28),
+            480 => Some(26),
+            720 => Some(23),
+            1080 => Some(20),
+            _ => None, // Invalid/old value, don't apply CRF
         };
-        cmd.arg("-crf").arg(crf_value.to_string());
+        if let Some(crf) = crf_value {
+            cmd.arg("-crf").arg(crf.to_string());
+        }
     }
 
     // Handle resolution and subtitles together in -vf filter
