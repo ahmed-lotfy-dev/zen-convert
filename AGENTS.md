@@ -37,6 +37,7 @@ Node.js 20+ / TypeScript 5.3: Follow standard conventions (TDD for critical path
 - Add advanced FFmpeg progress reporting with real-time events.
 - Add subtitle styling options UI for ASS format.
 - Implement video preview in VideoConverter UI.
+- Add codec selection UI for video conversion.
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
