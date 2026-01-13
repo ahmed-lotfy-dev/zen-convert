@@ -31,7 +31,7 @@ struct SubtitleOptions {
 #[derive(Deserialize, Debug)]
 struct VideoOptions {
     format: String, // "mp4", "webm", "mkv", "avi"
-    quality: Option<u8>, // 1-100 (CRF for H.264)
+    quality: Option<u16>, // Resolution preset: 360, 480, 720, 1080, or null for same
     outputDirectory: Option<String>,
     resolution: Option<ResolutionOptions>,
     bitrate: Option<String>, // e.g., "5M"
@@ -186,9 +186,26 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
 
     // Handle video codec
     let vcodec = options.codec.as_deref().unwrap_or("libx264");
-    let quality = options.quality.unwrap_or(23); // Default CRF 23
+    cmd.arg("-c:v").arg(vcodec);
 
-    // Handle resolution
+    // Quality preset: Higher quality = lower CRF (0-51 scale)
+    // 360p -> CRF 28, 480p -> CRF 26, 720p -> CRF 23, 1080p -> CRF 20
+    // If quality is None, preserve original (don't set CRF)
+    if let Some(quality_preset) = options.quality {
+        let crf_value = match quality_preset {
+            360 => 28,
+            480 => 26,
+            720 => 23,
+            1080 => 20,
+            _ => 23,
+        };
+        cmd.arg("-crf").arg(crf_value.to_string());
+    }
+
+    // Handle resolution and subtitles together in -vf filter
+    let mut filters: Vec<String> = Vec::new();
+
+    // Add scale filter if resolution specified
     if let Some(ref res) = options.resolution {
         if res.width.is_some() || res.height.is_some() {
             let scale_filter = if let (Some(w), Some(h)) = (res.width, res.height) {
@@ -201,7 +218,7 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
                 String::new()
             };
             if !scale_filter.is_empty() {
-                cmd.arg("-vf").arg(&scale_filter);
+                filters.push(scale_filter);
             }
         }
     }
@@ -230,10 +247,7 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
                 } else {
                     format!("subtitles='{}'", sub_path.replace('\\', "\\\\"))
                 };
-
-                // Combine with existing -vf if any
-                // For now, we'll just use subtitles filter
-                cmd.arg("-vf").arg(filter);
+                filters.push(filter);
             } else {
                 // Soft subtitle - add as track
                 cmd.arg("-i").arg(sub_path);
@@ -244,9 +258,13 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
         }
     }
 
-    // Set video codec and quality
+    // Apply all video filters combined with comma
+    if !filters.is_empty() {
+        cmd.arg("-vf").arg(filters.join(","));
+    }
+
+    // Set video codec
     cmd.arg("-c:v").arg(vcodec);
-    cmd.arg("-crf").arg(quality.to_string());
 
     // Set audio codec
     let acodec = options.audioCodec.as_deref().unwrap_or("aac");
@@ -269,17 +287,22 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
     // Execute FFmpeg command
     let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn FFmpeg: {}", e))?;
 
-    // Wait for FFmpeg to complete
-    let _ = child.wait().map_err(|e| format!("FFmpeg execution error: {}", e))?;
+    // Wait for FFmpeg to complete and get exit status
+    let status = child.wait().map_err(|e| format!("FFmpeg execution error: {}", e))?;
 
     let mut success = false;
     let mut error_msg = String::new();
 
-    // Check if output file exists
-    if output_path.exists() {
-        success = true;
+    // Check exit status
+    if status.success() {
+        // Check if output file exists
+        if output_path.exists() {
+            success = true;
+        } else {
+            error_msg = "FFmpeg completed but output file was not created".to_string();
+        }
     } else {
-        error_msg = "Output file was not created".to_string();
+        error_msg = format!("FFmpeg failed with exit code: {:?}", status.code());
     }
 
     if success {

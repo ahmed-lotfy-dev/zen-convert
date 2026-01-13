@@ -25,7 +25,7 @@ export const useVideoStore = create<VideoStore>()(
       outputDirectory: null,
       options: {
         format: 'mp4',
-        quality: 23,
+        quality: null, // null = same as source
         codec: 'libx264',
         audioCodec: 'aac',
       },

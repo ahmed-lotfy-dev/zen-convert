@@ -32,9 +32,17 @@ export default function VideoConverter() {
   } = useVideoStore();
 
   const [showResolution, setShowResolution] = useState(false);
+  const [showQuality, setShowQuality] = useState(false);
   const [width, setWidth] = useState<string>('');
   const [height, setHeight] = useState<string>('');
   const [bitrate, setBitrate] = useState<string>('');
+
+  const qualityPresets = [
+    { value: 360, label: '360p', desc: 'Mobile' },
+    { value: 480, label: '480p', desc: 'SD' },
+    { value: 720, label: '720p', desc: 'HD' },
+    { value: 1080, label: '1080p', desc: 'Full HD' },
+  ];
 
   const handleSelectFiles = async () => {
     try {
@@ -427,52 +435,101 @@ export default function VideoConverter() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
-                      Quality (CRF)
-                    </label>
-                    <span className="text-lg font-black text-white tabular-nums">
-                      {options.quality}
+                  <button
+                    onClick={() => setShowQuality(!showQuality)}
+                    className={cn(
+                      'w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold uppercase transition-all duration-300 border',
+                      showQuality
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:bg-white/[0.05]'
+                    )}
+                    disabled={isProcessing}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Settings2 size={16} />
+                      {showQuality ? `Quality: ${options.quality}p` : 'Same Quality (Default)'}
                     </span>
-                  </div>
-                  <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="absolute h-full bg-purple-600 transition-all duration-300"
-                      style={{ width: `${((51 - options.quality) / 50) * 100}%` }}
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="51"
-                      value={options.quality}
-                      onChange={(e) => setOptions({ quality: parseInt(e.target.value) })}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      disabled={isProcessing}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[10px] font-black text-slate-700 tracking-tighter uppercase">
-                    <span>High Quality</span>
-                    <span>Smaller Size</span>
-                  </div>
+                    {!showQuality && !options.quality && (
+                      <span className="text-[10px] text-emerald-400">Source</span>
+                    )}
+                  </button>
+
+                  {showQuality && (
+                    <div className="animate-in slide-in-from-top-2 duration-300 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                          Quality Preset
+                        </label>
+                        <button
+                          onClick={() => setOptions({ quality: null })}
+                          className="text-[10px] text-slate-500 hover:text-purple-400 uppercase font-black tracking-wider"
+                          disabled={isProcessing}
+                        >
+                          Reset to Same
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {qualityPresets.map((preset) => (
+                          <button
+                            key={preset.value}
+                            onClick={() => setOptions({ quality: preset.value })}
+                            className={cn(
+                              'py-3 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all duration-300 border flex flex-col items-center gap-1',
+                              options.quality === preset.value
+                                ? 'bg-purple-600 text-white border-purple-600 shadow-lg'
+                                : 'bg-white/[0.03] text-slate-500 border-white/5 hover:border-white/20 hover:bg-white/[0.05]'
+                            )}
+                            disabled={isProcessing}
+                          >
+                            <span>{preset.label}</span>
+                            <span className="text-[8px] text-slate-600 font-medium">
+                              {preset.desc}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
                   <button
                     onClick={() => setShowResolution(!showResolution)}
                     className={cn(
-                      'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border',
+                      'w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-black uppercase transition-all duration-300 border',
                       showResolution
                         ? 'bg-purple-600 text-white border-purple-600'
-                        : 'bg-white/[0.03] text-slate-500 border-white/5 hover:border-white/20 hover:bg-white/[0.05]'
+                        : 'bg-white/[0.03] text-slate-400 border-white/5 hover:border-white/20 hover:bg-white/[0.05]'
                     )}
                     disabled={isProcessing}
                   >
-                    <Settings2 size={16} />
-                    {showResolution ? 'Resize Enabled' : 'Enable Resize'}
+                    <span className="flex items-center gap-2">
+                      <Settings2 size={16} />
+                      {showResolution ? 'Custom Resolution' : 'Same Resolution (Default)'}
+                    </span>
+                    {!showResolution && (
+                      <span className="text-[10px] text-emerald-400">Source</span>
+                    )}
                   </button>
 
                   {showResolution && (
                     <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                          Resize Options
+                        </label>
+                        <button
+                          onClick={() => {
+                            setWidth('');
+                            setHeight('');
+                            setBitrate('');
+                          }}
+                          className="text-[10px] text-slate-500 hover:text-purple-400 uppercase font-black tracking-wider"
+                          disabled={isProcessing}
+                        >
+                          Reset to Auto
+                        </button>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-xs font-black text-slate-500 uppercase tracking-widest">

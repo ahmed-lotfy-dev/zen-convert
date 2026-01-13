@@ -30,7 +30,7 @@ export interface VideoFile extends SelectedFile {
 
 export interface ConversionOptions {
   format: 'mp4' | 'webm' | 'mkv' | 'avi';
-  quality: number;
+  quality: number | null; // null = same as source
   resolution?: { width?: number; height?: number };
   bitrate?: string;
   codec?: string;

@@ -1,0 +1,120 @@
+$ electron-vite dev
+vite v5.4.21 building SSR bundle for development...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+dist-electron/main/index.js  13.86 kB
+✓ built in 201ms
+
+build the electron main process successfully
+
+-----
+
+vite v5.4.21 building SSR bundle for development...
+transforming...
+✓ 1 modules transformed.
+rendering chunks...
+dist-electron/preload/index.mjs  2.80 kB
+✓ built in 9ms
+
+build the electron preload files successfully
+
+-----
+
+dev server running for the electron renderer process at:
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+
+start electron app...
+
+9:38:18 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.fuse_hidden0009bfcf00000008
+9:38:18 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.fuse_hidden0009bfcf00000008
+9:39:30 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/plan-template.md
+9:39:30 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/plan-template.md
+9:39:42 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/memory/constitution.md
+9:39:42 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/memory/constitution.md
+9:39:46 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/memory/constitution.md
+9:52:49 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/AGENTS.md
+9:52:49 PM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/AGENTS.md
+9:49:20 AM [vite] hmr update /App.tsx, /index.css
+9:49:20 AM [vite] page reload index.html
+9:49:20 AM [vite] hmr update /components/Layout.tsx, /index.css
+9:49:20 AM [vite] hmr update /index.css, /pages/Home.tsx, /pages/VideoConverter.tsx, /pages/ImageConverter.tsx, /pages/YouTubeDownloader.tsx
+9:49:20 AM [vite] hmr update /index.css
+9:49:20 AM [vite] hmr update /components/Sidebar.tsx, /index.css
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/converters/ImageConverter.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/converters/VideoConverter.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/index.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/ipc/index.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/services/YouTubeService.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/store/index.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/types/index.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/utils/electron-log.d.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/main/utils/logger.ts
+9:49:20 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/src/preload/index.ts
+9:49:20 AM [vite] hmr update /index.css, /pages/VideoConverter.tsx, /pages/ImageConverter.tsx
+9:49:20 AM [vite] page reload main.tsx
+9:49:20 AM [vite] hmr update /pages/Home.tsx, /index.css
+9:49:20 AM [vite] hmr update /pages/ImageConverter.tsx, /index.css
+9:49:20 AM [vite] hmr update /pages/VideoConverter.tsx, /index.css
+9:49:20 AM [vite] page reload stores/ImageStore.ts
+9:49:20 AM [vite] hmr update /pages/YouTubeDownloader.tsx, /index.css
+9:49:20 AM [vite] page reload stores/VideoStore.ts
+9:49:20 AM [vite] page reload types/file.ts
+9:49:20 AM [vite] page reload types/navigation.ts
+9:49:20 AM [vite] page reload types/window.ts
+9:52:40 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+9:54:55 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/electron.vite.config.1768212384769.mjs
+9:55:00 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/electron.vite.config.ts
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.eslintrc.cjs
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.github/workflows/ci.yml
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.analyze.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.checklist.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.constitution.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.implement.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.clarify.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.plan.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.specify.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.tasks.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/command/speckit.taskstoissues.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/plan/ARCHITECTURE.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/plan/DEPENDENCIES.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/plan/IMPLEMENTATION.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/plan/OPTIMIZATION.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.opencode/plan/PROJECT_OVERVIEW.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.prettierrc
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/memory/constitution.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/scripts/powershell/check-prerequisites.ps1
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/scripts/powershell/common.ps1
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/scripts/powershell/create-new-feature.ps1
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/scripts/powershell/setup-plan.ps1
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/scripts/powershell/update-agent-context.ps1
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/checklist-template.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/plan-template.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/agent-file-template.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/spec-template.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.vscode/extensions.json
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/AGENTS.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/.specify/templates/tasks-template.md
+9:55:57 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/build_log.txt
+9:57:03 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:19:39 AM [vite] hmr update /App.tsx, /index.css
+10:19:39 AM [vite] hmr update /components/Layout.tsx, /index.css
+10:19:39 AM [vite] hmr update /components/Sidebar.tsx, /index.css
+10:19:39 AM [vite] hmr update /index.css
+10:19:39 AM [vite] page reload index.html
+10:19:39 AM [vite] page reload lib/utils.ts
+10:20:24 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:20:40 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:23:59 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:24:15 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:24:43 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:40:13 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/tailwind.config.js
+10:40:13 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/postcss.config.js
+10:42:05 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:42:53 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:42:59 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:43:17 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/package.json
+10:50:45 AM [vite] changed tsconfig file detected: /mnt/hdd/projects/desktop/zen-convert/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+10:50:45 AM [vite] page reload /mnt/hdd/projects/desktop/zen-convert/tsconfig.json
