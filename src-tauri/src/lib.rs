@@ -153,8 +153,8 @@ fn download_youtube_video(url: String, format: String) -> Result<serde_json::Val
     Ok(serde_json::json!({ "success": true, "data": { "filePath": "/tmp/mock_download.mp4" } }))
 }
 
-#[tauri::command]
-fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json::Value, String> {
+#[tauri::command(async)]
+async fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json::Value, String> {
     println!("Converting video: {} with options: {:?}", file_path, options);
 
     // Download FFmpeg if not available
@@ -162,163 +162,145 @@ fn convert_video(file_path: String, options: VideoOptions) -> Result<serde_json:
         return Err(format!("Failed to download FFmpeg: {}", e));
     }
 
-    let input_path = Path::new(&file_path);
-    let parent_dir = input_path.parent().ok_or("Invalid file path")?;
-    let output_dir = if let Some(ref dir) = options.outputDirectory {
-        Path::new(dir)
-    } else {
-        parent_dir
-    };
-
-    let file_name = input_path.file_stem().ok_or("Invalid file name")?;
-    let output_ext = match options.format.as_str() {
-        "mp4" => "mp4",
-        "webm" => "webm",
-        "mkv" => "mkv",
-        "avi" => "avi",
-        _ => "mp4",
-    };
-    let output_path = output_dir.join(file_name).with_extension(output_ext);
-
-    // Build FFmpeg command
-    let mut cmd = FfmpegCommand::new();
-    cmd.arg("-i").arg(&file_path);
-
-    // Handle video codec
-    let vcodec = options.codec.as_deref().unwrap_or("libx264");
-    cmd.arg("-c:v").arg(vcodec);
-
-    // Quality preset: Higher quality = lower CRF (0-51 scale)
-    // 360p -> CRF 28, 480p -> CRF 26, 720p -> CRF 23, 1080p -> CRF 20
-    // Only apply CRF for valid presets (360, 480, 720, 1080), ignore old slider values like 51
-    if let Some(quality_preset) = options.quality {
-        let crf_value = match quality_preset {
-            360 => Some(28),
-            480 => Some(26),
-            720 => Some(23),
-            1080 => Some(20),
-            _ => None, // Invalid/old value, don't apply CRF
-        };
-        if let Some(crf) = crf_value {
-            cmd.arg("-crf").arg(crf.to_string());
-        }
-    }
-
-    // Handle resolution and subtitles together in -vf filter
-    let mut filters: Vec<String> = Vec::new();
-
-    // Add scale filter if resolution specified
-    if let Some(ref res) = options.resolution {
-        if res.width.is_some() || res.height.is_some() {
-            let scale_filter = if let (Some(w), Some(h)) = (res.width, res.height) {
-                format!("scale={}:{}", w, h)
-            } else if let Some(w) = res.width {
-                format!("scale={}: -2", w)
-            } else if let Some(h) = res.height {
-                format!("scale=-2:{}", h)
-            } else {
-                String::new()
-            };
-            if !scale_filter.is_empty() {
-                filters.push(scale_filter);
-            }
-        }
-    }
-
-    // Handle subtitles
-    if let Some(ref sub) = options.subtitle {
-        if let Some(ref sub_path) = sub.path {
-            if sub.burnIn {
-                // Burn subtitles into video
-                let filter = if let Some(ref format) = sub.format {
-                    match format.as_str() {
-                        "ass" => {
-                            if let Some(ref style) = sub.forceStyle {
-                                format!("ass='{}':force_style='{}'", sub_path.replace('\\', "\\\\"), style)
-                            } else {
-                                format!("ass='{}'", sub_path.replace('\\', "\\\\"))
-                            }
-                        }
-                        "vtt" => {
-                            format!("subtitles='{}'", sub_path.replace('\\', "\\\\"))
-                        }
-                        _ => {
-                            format!("subtitles='{}'", sub_path.replace('\\', "\\\\"))
-                        }
-                    }
-                } else {
-                    format!("subtitles='{}'", sub_path.replace('\\', "\\\\"))
-                };
-                filters.push(filter);
-            } else {
-                // Soft subtitle - add as track
-                cmd.arg("-i").arg(sub_path);
-                cmd.arg("-c:s").arg("mov_text");
-                cmd.arg("-map").arg("0");
-                cmd.arg("-map").arg("1");
-            }
-        }
-    }
-
-    // Apply all video filters combined with comma
-    if !filters.is_empty() {
-        cmd.arg("-vf").arg(filters.join(","));
-    }
-
-    // Set video codec
-    cmd.arg("-c:v").arg(vcodec);
-
-    // Set audio codec
-    let acodec = options.audioCodec.as_deref().unwrap_or("aac");
-    cmd.arg("-c:a").arg(acodec);
-
-    // Set bitrate if specified
-    if let Some(ref bitrate) = options.bitrate {
-        cmd.arg("-b:v").arg(bitrate);
-    }
-
-    // Faststart for web streaming
-    if options.format == "mp4" {
-        cmd.arg("-movflags").arg("+faststart");
-    }
-
-    // Overwrite output file
-    cmd.arg("-y");
-    cmd.arg(&output_path);
-
-    // Execute FFmpeg command
-    let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn FFmpeg: {}", e))?;
-
-    // Wait for FFmpeg to complete and get exit status
-    let status = child.wait().map_err(|e| format!("FFmpeg execution error: {}", e))?;
-
-    let mut success = false;
-    let mut error_msg = String::new();
-
-    // Check exit status
-    if status.success() {
-        // Check if output file exists
-        if output_path.exists() {
-            success = true;
+    let input_path = Path::new(&file_path).to_path_buf();
+    let output_path = {
+        let parent_dir = input_path.parent().ok_or("Invalid file path")?;
+        let output_dir = if let Some(ref dir) = options.outputDirectory {
+            Path::new(dir)
         } else {
-            error_msg = "FFmpeg completed but output file was not created".to_string();
-        }
-    } else {
-        error_msg = format!("FFmpeg failed with exit code: {:?}", status.code());
-    }
+            parent_dir
+        };
+        let file_name = input_path.file_stem().ok_or("Invalid file name")?;
+        let output_ext = match options.format.as_str() {
+            "mp4" => "mp4",
+            "webm" => "webm",
+            "mkv" => "mkv",
+            "avi" => "avi",
+            _ => "mp4",
+        };
+        output_dir.join(file_name).with_extension(output_ext)
+    };
 
-    if success {
-        Ok(serde_json::json!({
-            "success": true,
-            "filePath": output_path.display().to_string()
-        }))
-    } else {
-        Err(error_msg)
-    }
+    // Clone for use in blocking task
+    let output_path_clone = output_path.clone();
+
+    // Run FFmpeg in blocking task to avoid blocking async runtime
+    let result = tokio::task::spawn_blocking(move || {
+        // Build FFmpeg command
+        let mut cmd = FfmpegCommand::new();
+        cmd.arg("-i").arg(&input_path);
+
+        // Handle video codec
+        let vcodec = options.codec.as_deref().unwrap_or("libx264");
+        cmd.arg("-c:v").arg(vcodec);
+
+        // Quality preset
+        if let Some(quality_preset) = options.quality {
+            let crf_value = match quality_preset {
+                360 => Some(28),
+                480 => Some(26),
+                720 => Some(23),
+                1080 => Some(20),
+                _ => None,
+            };
+            if let Some(crf) = crf_value {
+                cmd.arg("-crf").arg(crf.to_string());
+            }
+        }
+
+        // Handle resolution and subtitles
+        let mut filters: Vec<String> = Vec::new();
+
+        if let Some(ref res) = options.resolution {
+            if res.width.is_some() || res.height.is_some() {
+                let scale_filter = if let (Some(w), Some(h)) = (res.width, res.height) {
+                    format!("scale={}:{}", w, h)
+                } else if let Some(w) = res.width {
+                    format!("scale={}: -2", w)
+                } else if let Some(h) = res.height {
+                    format!("scale=-2:{}", h)
+                } else {
+                    String::new()
+                };
+                if !scale_filter.is_empty() {
+                    filters.push(scale_filter);
+                }
+            }
+        }
+
+        if let Some(ref sub) = options.subtitle {
+            if let Some(ref sub_path) = sub.path {
+                if sub.burnIn {
+                    let filter = if let Some(ref format) = sub.format {
+                        match format.as_str() {
+                            "ass" => {
+                                if let Some(ref style) = sub.forceStyle {
+                                    format!("ass='{}':force_style='{}'", sub_path.replace('\\', "\\\\"), style)
+                                } else {
+                                    format!("ass='{}'", sub_path.replace('\\', "\\\\"))
+                                }
+                            }
+                            "vtt" => format!("subtitles='{}'", sub_path.replace('\\', "\\\\")),
+                            _ => format!("subtitles='{}'", sub_path.replace('\\', "\\\\")),
+                        }
+                    } else {
+                        format!("subtitles='{}'", sub_path.replace('\\', "\\\\"))
+                    };
+                    filters.push(filter);
+                } else {
+                    cmd.arg("-i").arg(sub_path);
+                    cmd.arg("-c:s").arg("mov_text");
+                    cmd.arg("-map").arg("0");
+                    cmd.arg("-map").arg("1");
+                }
+            }
+        }
+
+        if !filters.is_empty() {
+            cmd.arg("-vf").arg(filters.join(","));
+        }
+
+        // Set audio codec
+        let acodec = options.audioCodec.as_deref().unwrap_or("aac");
+        cmd.arg("-c:a").arg(acodec);
+
+        // Set bitrate if specified
+        if let Some(ref bitrate) = options.bitrate {
+            cmd.arg("-b:v").arg(bitrate);
+        }
+
+        // Faststart for MP4
+        if options.format == "mp4" {
+            cmd.arg("-movflags").arg("+faststart");
+        }
+
+        // Overwrite output file
+        cmd.arg("-y");
+        cmd.arg(&output_path_clone);
+
+        // Execute FFmpeg
+        let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn FFmpeg: {}", e))?;
+        let status = child.wait().map_err(|e| format!("FFmpeg execution error: {}", e))?;
+
+        if status.success() && output_path_clone.exists() {
+            Ok::<_, String>(output_path_clone)
+        } else if !status.success() {
+            Err(format!("FFmpeg failed with exit code: {:?}", status.code()))
+        } else {
+            Err("Output file was not created".to_string())
+        }
+    }).await.map_err(|e| format!("Task error: {}", e))?;
+
+    let result_path = result.map_err(|e| format!("Conversion failed: {}", e))?;
+
+    Ok(serde_json::json!({
+        "success": true,
+        "filePath": result_path.display().to_string()
+    }))
 }
 
-#[tauri::command]
-fn get_video_info(file_path: String) -> Result<serde_json::Value, String> {
+#[tauri::command(async)]
+async fn get_video_info(file_path: String) -> Result<serde_json::Value, String> {
     println!("Getting video info for: {}", file_path);
 
     // Download FFmpeg if not available
