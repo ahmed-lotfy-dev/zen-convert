@@ -31,6 +31,7 @@ export default function ImageConverter() {
       const selected = await open({
         title: 'Select Images',
         multiple: true,
+        defaultPath: outputDirectory || undefined,
         filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'webp', 'avif', 'tiff'] }],
       });
 

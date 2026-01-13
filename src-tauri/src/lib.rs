@@ -2,6 +2,7 @@ use image::ImageReader;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
+use std::process::Command;
 use serde::Deserialize;
 use ffmpeg_sidecar::{command::FfmpegCommand, download::auto_download};
 
@@ -181,9 +182,6 @@ async fn convert_video(file_path: String, options: VideoOptions) -> Result<serde
         output_dir.join(file_name).with_extension(output_ext)
     };
 
-    // Clone for use in blocking task
-    let output_path_clone = output_path.clone();
-
     // Run FFmpeg in blocking task to avoid blocking async runtime
     let result = tokio::task::spawn_blocking(move || {
         // Build FFmpeg command
@@ -276,14 +274,14 @@ async fn convert_video(file_path: String, options: VideoOptions) -> Result<serde
 
         // Overwrite output file
         cmd.arg("-y");
-        cmd.arg(&output_path_clone);
+        cmd.arg(&output_path);
 
         // Execute FFmpeg
         let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn FFmpeg: {}", e))?;
         let status = child.wait().map_err(|e| format!("FFmpeg execution error: {}", e))?;
 
-        if status.success() && output_path_clone.exists() {
-            Ok::<_, String>(output_path_clone)
+        if status.success() && output_path.exists() {
+            Ok::<_, String>(output_path)
         } else if !status.success() {
             Err(format!("FFmpeg failed with exit code: {:?}", status.code()))
         } else {
@@ -299,38 +297,34 @@ async fn convert_video(file_path: String, options: VideoOptions) -> Result<serde
     }))
 }
 
-#[tauri::command(async)]
-async fn get_video_info(file_path: String) -> Result<serde_json::Value, String> {
+#[tauri::command]
+fn get_video_info(file_path: String) -> Result<serde_json::Value, String> {
     println!("Getting video info for: {}", file_path);
 
-    // Download FFmpeg if not available
+    // Ensure FFmpeg is available
     if let Err(e) = auto_download() {
         return Err(format!("Failed to download FFmpeg: {}", e));
     }
 
-    let mut cmd = FfmpegCommand::new();
-    cmd.arg("-i").arg(&file_path);
+    // Run ffprobe to get duration
+    let output = Command::new("ffprobe")
+        .arg("-v")
+        .arg("error")
+        .arg("-show_entries")
+        .arg("format=duration")
+        .arg("-of")
+        .arg("default=noprint_wrappers=1:nokey=1")
+        .arg(&file_path)
+        .output()
+        .map_err(|e| format!("Failed to run ffprobe: {}", e))?;
 
-    // FFmpeg sends info to stderr, we need to capture it
-    let mut child = cmd.spawn().map_err(|e| format!("Failed to spawn FFmpeg: {}", e))?;
+    let duration_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let duration: f64 = duration_str.parse().unwrap_or(0.0);
 
-    // Get stderr output (FFmpeg info goes there)
-    let _ = child.wait().map_err(|e| format!("FFmpeg execution error: {}", e))?;
-
-    let info = serde_json::json!({
+    Ok(serde_json::json!({
         "success": true,
-        "format": "unknown",
-        "duration": 0,
-        "width": 0,
-        "height": 0,
-        "videoCodec": "unknown",
-        "audioCodec": "unknown"
-    });
-
-    // For now, return basic info
-    // In a more sophisticated implementation, we'd parse stderr output
-
-    Ok(info)
+        "duration": duration,
+    }))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

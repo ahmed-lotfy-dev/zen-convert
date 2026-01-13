@@ -26,6 +26,7 @@ export interface VideoFile extends SelectedFile {
   subtitleFormat?: 'srt' | 'ass' | 'vtt';
   burnSubtitle?: boolean;
   subtitleForceStyle?: string;
+  totalDuration?: number; // Total video duration for progress calculation
 }
 
 export interface ConversionOptions {

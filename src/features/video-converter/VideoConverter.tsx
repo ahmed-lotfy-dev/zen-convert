@@ -9,10 +9,11 @@ import {
   FileText,
   Type,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '../../shared/lib/utils';
 import { invoke } from '@tauri-apps/api/core';
 import { open, ask, message } from '@tauri-apps/plugin-dialog';
+import { listen } from '@tauri-apps/api/event';
 import { FileStatus } from '../../shared/types';
 import { VideoFile } from '../../shared/types';
 
@@ -36,6 +37,9 @@ export default function VideoConverter() {
   const [width, setWidth] = useState<string>('');
   const [height, setHeight] = useState<string>('');
   const [bitrate, setBitrate] = useState<string>('');
+  const [currentProgress, setCurrentProgress] = useState<string>('');
+  const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [totalDuration, setTotalDuration] = useState<number>(0);
 
   const qualityPresets = [
     { value: 360, label: '360p', desc: 'Mobile' },
@@ -44,11 +48,52 @@ export default function VideoConverter() {
     { value: 1080, label: '1080p', desc: 'Full HD' },
   ];
 
+  // Set up progress event listener
+  useEffect(() => {
+    let unlistenProgress: (() => void) | undefined;
+    let unlistenComplete: (() => void) | undefined;
+
+    async function setupListeners() {
+      unlistenProgress = await listen<{ currentTime: number; totalTime: number; message: string }>(
+        'video-progress',
+        (event) => {
+          const current = event.payload.currentTime;
+          const total = event.payload.totalTime || totalDuration || 1;
+          const percent = Math.min(Math.round((current / total) * 100), 100);
+          setProgressPercent(percent);
+          setTotalDuration(total);
+
+          // Format time display
+          const mins = Math.floor(current / 60);
+          const secs = Math.floor(current % 60);
+          const totalMins = Math.floor(total / 60);
+          const totalSecs = Math.floor(total % 60);
+          setCurrentProgress(
+            `${mins}:${secs.toString().padStart(2, '0')} / ${totalMins}:${totalSecs.toString().padStart(2, '0')}`
+          );
+        }
+      );
+
+      unlistenComplete = await listen('video-complete', () => {
+        setCurrentProgress('');
+        setProgressPercent(0);
+      });
+    }
+
+    setupListeners();
+
+    return () => {
+      if (unlistenProgress) unlistenProgress();
+      if (unlistenComplete) unlistenComplete();
+    };
+  }, [totalDuration]);
+
   const handleSelectFiles = async () => {
     try {
       const selected = await open({
         title: 'Select Videos',
         multiple: true,
+        defaultPath: outputDirectory || undefined,
         filters: [
           {
             name: 'Videos',
@@ -65,11 +110,11 @@ export default function VideoConverter() {
             const ext = name.split('.').pop() || '';
 
             // Get video info from backend
-            let videoInfo = {};
+            let duration = 0;
             try {
-              const info = await invoke('get_video_info', { filePath: path });
-              if (typeof info === 'object' && info !== null) {
-                videoInfo = info;
+              const info: any = await invoke('get_video_info', { filePath: path });
+              if (info && info.duration) {
+                duration = info.duration;
               }
             } catch (err) {
               console.error('Failed to get video info:', err);
@@ -84,7 +129,8 @@ export default function VideoConverter() {
               lastModified: Date.now(),
               status: FileStatus.PENDING,
               extension: '.' + ext,
-              ...(videoInfo as any),
+              duration: duration,
+              totalDuration: duration,
             };
           })
         );
@@ -574,8 +620,27 @@ export default function VideoConverter() {
               </div>
 
               <div className="pt-4 space-y-4">
-                {isProcessing && (
+                {isProcessing ? (
                   <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <span>Progress</span>
+                      <span>{progressPercent}%</span>
+                    </div>
+                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-purple-500 transition-all duration-300"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    {currentProgress && (
+                      <div className="flex justify-between text-[10px] font-mono text-purple-400">
+                        <span>{currentProgress.split(' / ')[0]}</span>
+                        <span>{currentProgress.split(' / ')[1]}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
                       <span>Progress</span>
                       <span>{Math.round(progress)}%</span>
@@ -588,6 +653,7 @@ export default function VideoConverter() {
                     </div>
                   </div>
                 )}
+
                 <button
                   onClick={handleConvertAll}
                   className={cn(
